@@ -1,9 +1,16 @@
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
+import dotenv from 'dotenv';
+import cors from 'cors';
+
+dotenv.config();
+
+const ROOT_DIRECTORY = process.env.ROOT_DIRECTORY || '.';
+const PORT = process.env.PORT || '3000';;
 
 const app = express();
-const PORT = 3000;
+app.use(cors());
 
 // Define the User type
 type User = {
@@ -83,9 +90,12 @@ const getFileType = (ext: string): FileSystemItem['type'] => {
   return extToType[ext.toLowerCase()] || 'undefined';
 };
 
-// API endpoint to serve files and folders
 app.get('/api/files', (req, res) => {
-  const directory = req.query.dir as string || '.'; // Default to current directory
+  const directory = req.query.path
+    ? path.join(ROOT_DIRECTORY, req.query.path as string) // Use subdirectory if provided
+    : ROOT_DIRECTORY;
+
+    console.log(directory);
 
   try {
     const files = fs.readdirSync(directory, { withFileTypes: true });
@@ -100,10 +110,20 @@ app.get('/api/files', (req, res) => {
       return {
         name: file.name,
         type: file.isDirectory() ? 'directory' : getFileType(path.extname(file.name)),
-        author: user, // Mock user as the author
-        date: stats.mtime, // Last modification date
-        size: file.isDirectory() ? 0 : stats.size, // Directories have size 0
+        author: user,
+        date: stats.mtime,
+        size: file.isDirectory() ? 0 : stats.size,
       };
+    }).sort((a, b) => {
+      // 1. Sort by type (directories should come first)
+      if (a.type === 'directory' && b.type !== 'directory') {
+        return -1; // Put 'a' (directory) before 'b' (file)
+      } else if (a.type !== 'directory' && b.type === 'directory') {
+        return 1; // Put 'b' (directory) before 'a' (file)
+      }
+
+      // 2. If both are the same type (either both directories or both files), compare by name
+      return a.name.localeCompare(b.name);
     });
 
     res.json(items);
@@ -113,6 +133,32 @@ app.get('/api/files', (req, res) => {
   }
 });
 
+app.get('/api/files/download', (req, res) => {
+  const filePath = req.query.path as string;
+
+  // Resolve the absolute file path
+  const fullPath = path.join(ROOT_DIRECTORY, filePath);
+
+  // Check if the file exists
+  if (fs.existsSync(fullPath)) {
+    // Set headers for the download
+    res.setHeader('Content-Disposition', `attachment; filename=${path.basename(fullPath)}`);
+    res.setHeader('Content-Type', 'application/octet-stream'); // Set appropriate mime type
+
+    // Create a read stream for the file and pipe it to the response
+    const fileStream = fs.createReadStream(fullPath);
+    fileStream.pipe(res);
+
+    fileStream.on('error', (err) => {
+      console.error(err);
+      res.status(500).json({ error: 'Error reading the file' });
+    });
+  } else {
+    res.status(404).json({ error: 'File not found' });
+  }
+});
+
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Root directory: ${ROOT_DIRECTORY}`);
 });
