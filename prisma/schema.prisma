@@ -17,13 +17,43 @@ model User {
   id       String @id @default(uuid())
   name     String
   password String
-  posts    Post[]
+
+  posts       Post[]
+  directories Directory[]
+  files       File[]
 }
 
 model Post {
-  id        String   @id @default(uuid())
-  content   String
+  id      String @id @default(uuid())
+  content String
+
   authorId  String
   author    User     @relation(fields: [authorId], references: [id])
   createdAt DateTime @default(now())
+}
+
+model Directory {
+  id   String @id @default(uuid())
+  name String
+
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+
+  parentId       String?
+  parent         Directory?  @relation("ParentChild", fields: [parentId], references: [id])
+  subdirectories Directory[] @relation("ParentChild")
+  files          File[]
+}
+
+model File {
+  id   String @id @default(uuid())
+  name String
+
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+
+  directoryId String
+  directory   Directory @relation(fields: [directoryId], references: [id])
 }
