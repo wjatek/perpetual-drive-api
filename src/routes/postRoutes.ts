@@ -16,7 +16,7 @@ router.get("/", async (req: Request, res: Response, next: NextFunction): Promise
 router.get("/:id", async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
-    const post = await prisma.post.findUnique({ where: { id: Number(id) } });
+    const post = await prisma.post.findUnique({ where: { id: id } });
 
     if (!post) {
       res.status(404).json({ error: "Post not found" });
