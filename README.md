@@ -1,12 +1,13 @@
 # Perpetual Drive API
 
-An API for managing users, posts, directories, and files. Built with Express, Prisma, PostgreSQL, and TypeScript.
+An application that combines an interactive information board with an online storage drive for managing and sharing files.
+Built with Express, Prisma, PostgreSQL, and TypeScript.
 
 ---
 
 ## Features
 - **User authentication** with JWT.
-- Manage **posts**, **directories**, and **files**.
+- Manage **posts**, virtual **directories**, and **files**.
 - Support for **nested directories** and file associations.
 
 ---
@@ -14,7 +15,7 @@ An API for managing users, posts, directories, and files. Built with Express, Pr
 ## Local Setup
 
 ### Prerequisites
-1. Install [Node.js](https://nodejs.org/) (v18 or later).
+1. Install [Node.js](https://nodejs.org/) (v20 or later).
 2. Install [PostgreSQL](https://www.postgresql.org/).
 
 ### Steps
@@ -30,6 +31,7 @@ An API for managing users, posts, directories, and files. Built with Express, Pr
 3. Configure environment variables:
    Create a `.env` file in the root directory:
   ```
+   PORT=3000
    DATABASE_URL=postgresql://<username>:<password>@localhost:5432/<database_name>
    JWT_SECRET=your_jwt_secret
   ```
