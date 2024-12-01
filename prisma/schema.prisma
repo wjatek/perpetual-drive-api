@@ -54,6 +54,6 @@ model File {
   author    User     @relation(fields: [authorId], references: [id])
   createdAt DateTime @default(now())
 
-  directoryId String
-  directory   Directory @relation(fields: [directoryId], references: [id])
+  directoryId String?
+  directory   Directory? @relation(fields: [directoryId], references: [id])
 }

@@ -74,6 +74,13 @@ async function seed() {
       directoryId: bobRootDir.id,
     },
   })
+
+  await prisma.file.create({
+    data: {
+      name: "file in root directory.txt",
+      authorId: bob.id,
+    },
+  })
 }
 
 seed()

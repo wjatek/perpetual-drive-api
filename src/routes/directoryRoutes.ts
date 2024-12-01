@@ -1,6 +1,6 @@
 import express, { NextFunction, Request, Response } from 'express'
-import prisma from '../prisma/client'
 import { query, validationResult } from 'express-validator'
+import prisma from '../prisma/client'
 
 const router = express.Router()
 
@@ -19,7 +19,7 @@ router.get(
     try {
       const directories = await prisma.directory.findMany({
         where: {
-          parentId,
+          parentId: parentId === '' ? null : parentId,
         },
       })
       res.json(directories)
