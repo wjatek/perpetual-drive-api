@@ -1,4 +1,5 @@
-import express, { Request, Response, NextFunction } from 'express'
+import express, { NextFunction, Request, Response } from 'express'
+import { param, validationResult } from 'express-validator'
 import prisma from '../prisma/client'
 
 const router = express.Router()
@@ -17,8 +18,15 @@ router.get(
 
 router.get(
   '/:id',
+  param('id').isUUID().withMessage('Invalid ID'),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const errors = validationResult(req)
+      if (!errors.isEmpty()) {
+        res.status(400).json({ errors: errors.array() })
+        return
+      }
+
       const { id } = req.params
       const post = await prisma.post.findUnique({ where: { id: id } })
 

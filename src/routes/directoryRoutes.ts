@@ -1,5 +1,5 @@
 import express, { NextFunction, Request, Response } from 'express'
-import { query, validationResult } from 'express-validator'
+import { body, param, query, validationResult } from 'express-validator'
 import prisma from '../prisma/client'
 
 const router = express.Router()
@@ -14,9 +14,9 @@ router.get(
       return
     }
 
-    const parentId = req.query.parentId as string
-
     try {
+      const parentId = req.query.parentId as string
+
       const directories = await prisma.directory.findMany({
         where: {
           parentId: parentId === '' ? null : parentId,
@@ -31,7 +31,14 @@ router.get(
 
 router.get(
   '/:id',
+  param('id').isUUID().withMessage('Invalid ID'),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() })
+      return
+    }
+
     try {
       const { id } = req.params
       const directory = await prisma.directory.findUnique({ where: { id: id } })

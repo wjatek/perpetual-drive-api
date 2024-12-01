@@ -1,12 +1,12 @@
 import express, { NextFunction, Request, Response } from 'express'
-import { query, validationResult } from 'express-validator'
+import { param, query, validationResult } from 'express-validator'
 import prisma from '../prisma/client'
 
 const router = express.Router()
 
 router.get(
   '/',
-  [query('directoryId').optional().isString().trim().escape()],
+  [query('directoryId').optional().isUUID().trim().escape()],
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
@@ -14,9 +14,9 @@ router.get(
       return
     }
 
-    const directoryId = req.query.directoryId as string
-
     try {
+      const directoryId = req.query.directoryId as string
+
       const files = await prisma.file.findMany({
         where: {
           directoryId: directoryId === '' ? null : directoryId,
@@ -31,7 +31,14 @@ router.get(
 
 router.get(
   '/:id',
+  param('id').isUUID().withMessage('Invalid ID'),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() })
+      return
+    }
+
     try {
       const { id } = req.params
       const file = await prisma.file.findUnique({ where: { id: id } })
