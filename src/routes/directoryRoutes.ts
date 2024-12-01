@@ -1,15 +1,28 @@
 import express, { NextFunction, Request, Response } from 'express'
 import prisma from '../prisma/client'
-import { Directory } from '@prisma/client'
+import { query, validationResult } from 'express-validator'
 
 const router = express.Router()
 
 router.get(
   '/',
+  [query('parentId').optional().isString().trim().escape()],
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() })
+      return
+    }
+
+    const parentId = req.query.parentId as string
+
     try {
-      const directorys = await prisma.directory.findMany()
-      res.json(directorys)
+      const directories = await prisma.directory.findMany({
+        where: {
+          parentId,
+        },
+      })
+      res.json(directories)
     } catch (err) {
       next(err)
     }
@@ -59,7 +72,9 @@ router.post(
         return
       }
 
-      if (parent.subdirectories.find(subdirectory => subdirectory.name === name)) {
+      if (
+        parent.subdirectories.find((subdirectory) => subdirectory.name === name)
+      ) {
         res.status(400).json({ error: 'Directory already exists' })
         return
       }
