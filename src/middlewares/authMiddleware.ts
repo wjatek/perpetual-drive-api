@@ -1,15 +1,13 @@
 import { NextFunction, Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
+import prisma from '../prisma/client'
+import { User } from '@prisma/client'
 
-interface AuthRequest extends Request {
-  userId?: number
-}
-
-const authMiddleware = (
-  req: AuthRequest,
+const authMiddleware = async (
+  req: Request,
   res: Response,
   next: NextFunction
-): void => {
+): Promise<void> => {
   const token = req.header('Authorization')?.replace('Bearer ', '')
 
   if (!token) {
@@ -21,8 +19,14 @@ const authMiddleware = (
     const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET || 'RTH45RTb4rtgRTEHbe5ghh5%Hh'
-    ) as { userId: number }
-    req.userId = decoded.userId
+    ) as { userId: string }
+
+    const user = (await prisma.user.findUnique({
+      where: { id: decoded.userId },
+    })) as User
+
+    req.user = user
+
     next()
   } catch (err) {
     res.status(401).json({ error: 'Invalid or expired token' })
