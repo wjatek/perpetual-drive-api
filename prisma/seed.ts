@@ -10,7 +10,7 @@ import prisma from "../src/prisma/client";
 async function seed() {
   await prisma.post.deleteMany({});
   await prisma.user.deleteMany({});
-  
+
   await prisma.$executeRaw`ALTER SEQUENCE "User_id_seq" RESTART WITH 1;`;
   await prisma.$executeRaw`ALTER SEQUENCE "Post_id_seq" RESTART WITH 1;`;
 
