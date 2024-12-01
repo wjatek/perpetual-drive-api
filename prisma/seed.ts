@@ -6,6 +6,8 @@
  */
 
 import prisma from "../src/prisma/client";
+import bcrypt from "bcryptjs";
+
 
 async function seed() {
   await prisma.post.deleteMany({});
@@ -16,9 +18,9 @@ async function seed() {
 
   await prisma.user.createMany({
     data: [
-      { name: "Alice" },
-      { name: "Bob" },
-      { name: "Charlie" },
+      { name: "Alice", password: await bcrypt.hash("123456", 10) },
+      { name: "Bob", password: await bcrypt.hash("123456", 10)  },
+      { name: "Charlie", password: await bcrypt.hash("654321", 10)  },
     ],
   });
 
