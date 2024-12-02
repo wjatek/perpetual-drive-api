@@ -1,5 +1,5 @@
 import express, { NextFunction, Request, Response } from 'express'
-import { param, validationResult } from 'express-validator'
+import { body, param, validationResult } from 'express-validator'
 import prisma from '../prisma/client'
 
 const router = express.Router()
@@ -36,6 +36,34 @@ router.get(
       }
 
       res.json(post)
+    } catch (err) {
+      next(err)
+    }
+  }
+)
+
+router.post(
+  '/',
+  body('content').trim().escape().notEmpty().withMessage('Content is required'),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() })
+      return
+    }
+
+    try {
+      const { content } = req.body
+      const authorId = req.user.id
+
+      const newPost = await prisma.post.create({
+        data: {
+          content,
+          authorId,
+        },
+      })
+
+      res.status(201).json(newPost)
     } catch (err) {
       next(err)
     }
