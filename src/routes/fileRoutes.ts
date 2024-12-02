@@ -10,7 +10,7 @@ const router = express.Router()
 
 router.get(
   '/',
-  [query('directoryId').optional().isUUID().trim().escape()],
+  [query('directoryId').optional().isString().trim().escape()],
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
@@ -130,6 +130,7 @@ router.post(
 
       if (!directory) {
         res.status(400).json({ error: 'Directory does not exist' })
+        await fs.promises.unlink(req.file.path)
         return
       }
 
@@ -150,14 +151,14 @@ router.post(
       try {
         await pipeStream(readStream, writeStream)
 
-        fs.unlinkSync(req.file.path)
+        await fs.promises.unlink(req.file.path)
 
         res.status(201).json(newFile)
       } catch (err) {
         await prisma.file.delete({
           where: { id: newFile.id },
         })
-        fs.unlinkSync(filePath)
+        await fs.promises.unlink(filePath)
 
         res
           .status(500)
