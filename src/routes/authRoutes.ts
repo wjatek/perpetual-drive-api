@@ -61,7 +61,7 @@ router.post(
         }
       )
 
-      res.json({ message: 'Login successful', token })
+      res.json({ user: { id: user.id, name: user.name }, token })
     } catch (err) {
       next(err)
     }
