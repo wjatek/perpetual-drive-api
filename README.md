@@ -212,7 +212,7 @@ Built with Express, Prisma, PostgreSQL, and TypeScript.
   - `200 OK` with file details.
   - `404 Not Found` if the file does not exist.
 
-- **GET** `/download/:id`: Get a file by ID.  
+- **GET** `/download/:id`: Download a file by ID.  
 
   **Response**:  
   - `200 OK` with file details.
