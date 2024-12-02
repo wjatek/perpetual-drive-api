@@ -126,6 +126,19 @@ Built with Express, Prisma, PostgreSQL, and TypeScript.
   - `200 OK` with post details.
   - `404 Not Found` if the post does not exist.
 
+- **POST** `/`: Create a new post.  
+
+  **Request Body**:  
+  ```
+  {
+    "content": "string"
+  }
+  ```
+
+  **Response**:  
+  - `201 Created` on success.
+  - `400 Bad Request` on invalid input.
+
 ---
 
 ### **Directory Routes** (`/directories`)
@@ -198,6 +211,36 @@ Built with Express, Prisma, PostgreSQL, and TypeScript.
   **Response**:  
   - `200 OK` with file details.
   - `404 Not Found` if the file does not exist.
+
+- **GET** `/download/:id`: Get a file by ID.  
+
+  **Response**:  
+  - `200 OK` with file details.
+  - `404 Not Found` if the file does not exist.
+
+  - The file will be streamed in the response with the appropriate headers for downloading.
+  - The response headers:
+  ```
+  Content-Type: application/octet-stream
+  Content-Length: The size of the file.
+  Content-Disposition: The file will be downloaded with the specified filename.
+  ```
+  - The file content will be streamed as an attachment.
+
+- **POST** `/`: Upload file.  
+  ```
+  {
+    "directoryId": "string"
+  }
+  ```
+
+  **Request file**:  
+  - A file to be uploaded. The file should be included in the request as multipart/form-data.
+
+  **Response**:  
+  - `201 Created` on success.
+  - `400 Bad Request` on invalid input.
+
 
 ---
 

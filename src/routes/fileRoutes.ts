@@ -1,5 +1,5 @@
 import express, { NextFunction, Request, Response } from 'express'
-import { param, query, validationResult } from 'express-validator'
+import { body, param, query, validationResult } from 'express-validator'
 import fs from 'fs'
 import multer from 'multer'
 import path from 'path'
@@ -103,7 +103,7 @@ router.get(
 
 router.post(
   '/upload',
-  param('directoryId').isUUID().withMessage('Invalid ID'),
+  body('directoryId').isUUID().withMessage('Invalid ID'),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     upload(req, res, async (err: any) => {
       if (err) {
