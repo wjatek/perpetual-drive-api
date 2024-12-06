@@ -59,6 +59,43 @@ router.get(
   }
 )
 
+router.delete(
+  '/:id',
+  param('id').isUUID().withMessage('Invalid ID'),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() })
+      return
+    }
+
+    try {
+      const { id } = req.params
+      const file = await prisma.file.findUnique({ where: { id } })
+
+      if (!file) {
+        res.status(404).json({ error: 'File not found' })
+        return
+      }
+
+      const filePath = path.join(FILE_STORAGE_PATH, id)
+
+      try {
+        await fs.promises.access(filePath)
+        await fs.promises.unlink(filePath)
+      } catch {
+        console.error('Error deleting file from storage') //TODO better logging
+      }
+
+      await prisma.file.delete({ where: { id } })
+
+      res.status(200).json({ message: 'File deleted' })
+    } catch (err) {
+      next(err)
+    }
+  }
+)
+
 router.get(
   '/download/:id',
   param('id').isUUID().withMessage('Invalid ID'),
