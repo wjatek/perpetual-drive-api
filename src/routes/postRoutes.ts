@@ -70,4 +70,25 @@ router.post(
   }
 )
 
+router.get(
+  '/:id/comments',
+  param('id').isUUID().withMessage('Invalid ID'),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const errors = validationResult(req)
+      if (!errors.isEmpty()) {
+        res.status(400).json({ errors: errors.array() })
+        return
+      }
+
+      const { id } = req.params
+      const post = await prisma.comment.findMany({ where: { postId: id } })
+
+      res.json(post)
+    } catch (err) {
+      next(err)
+    }
+  }
+)
+
 export default router
