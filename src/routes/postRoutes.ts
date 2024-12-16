@@ -1,6 +1,7 @@
 import express, { NextFunction, Request, Response } from 'express'
 import { body, param, validationResult } from 'express-validator'
 import prisma from '../prisma/client'
+import { basicUser } from '../utils/selectors'
 
 const router = express.Router()
 
@@ -8,7 +9,13 @@ router.get(
   '/',
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const posts = await prisma.post.findMany()
+      const posts = await prisma.post.findMany({
+        include: {
+          likedBy: {
+            select: basicUser,
+          },
+        },
+      })
       res.json(posts)
     } catch (err) {
       next(err)
@@ -28,7 +35,14 @@ router.get(
       }
 
       const { id } = req.params
-      const post = await prisma.post.findUnique({ where: { id: id } })
+      const post = await prisma.post.findUnique({
+        where: { id: id },
+        include: {
+          likedBy: {
+            select: basicUser,
+          },
+        },
+      })
 
       if (!post) {
         res.status(404).json({ error: 'Post not found' })

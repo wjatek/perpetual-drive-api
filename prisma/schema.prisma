@@ -19,8 +19,10 @@ model User {
   name     String
   password String
 
-  posts       Post[]
-  comments    Comment[]
+  posts      Post[]
+  comments   Comment[]
+  likedPosts Post[]    @relation("PostLikes")
+
   directories Directory[]
   files       File[]
 }
@@ -30,6 +32,7 @@ model Post {
   content String
 
   comments Comment[]
+  likedBy  User[]    @relation("PostLikes")
 
   authorId  String
   author    User     @relation(fields: [authorId], references: [id])
