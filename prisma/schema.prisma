@@ -20,6 +20,7 @@ model User {
   password String
 
   posts       Post[]
+  comments    Comment[]
   directories Directory[]
   files       File[]
 }
@@ -28,9 +29,23 @@ model Post {
   id      String @id @default(uuid())
   content String
 
+  comments Comment[]
+
   authorId  String
   author    User     @relation(fields: [authorId], references: [id])
   createdAt DateTime @default(now())
+}
+
+model Comment {
+  id      String @id @default(uuid())
+  content String
+
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+
+  postId String
+  post   Post   @relation(fields: [postId], references: [id])
 }
 
 model Directory {

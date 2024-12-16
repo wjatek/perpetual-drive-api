@@ -97,6 +97,47 @@ async function seed() {
     ],
   })
 
+  const posts = await prisma.post.findMany()
+  await prisma.comment.createMany({
+    data: [
+      {
+        content: "Hi, I'm Alice, this is my first comment!",
+        authorId: users[0].id,
+        postId: posts[0].id,
+      },
+      {
+        content:
+          'Lorem ipsum dolor sit amet consectetur adipisicing elit. Quos inventore reiciendis sapiente!',
+        authorId: users[1].id,
+        postId: posts[0].id,
+      },
+      {
+        content:
+          'A Horcrux was an object in which a Dark wizard or witch had hidden a detached fragment of his or her soul in order to become immortal.',
+        authorId: users[0].id,
+        postId: posts[2].id,
+      },
+      {
+        content:
+          'Horcruxes could only be created after committing murder, the most supreme act of evil, as a means to tear the soul.',
+        authorId: users[1].id,
+        postId: posts[2].id,
+      },
+      {
+        content:
+          'Given that Horcruxes were utterly precious to those who made them, protective measures were taken to prevent them from being stolen or destroyed, such as counter-charms and curses.',
+        authorId: users[2].id,
+        postId: posts[2].id,
+      },
+      {
+        content:
+          'The first known Horcrux was created by Herpo the Foul in Ancient Greece. The only other known creator of a Horcrux was Lord Voldemort, who was very likely the only person to have successfully created more than one.',
+        authorId: users[0].id,
+        postId: posts[2].id,
+      },
+    ],
+  })
+
   const aliceRootDir = await prisma.directory.create({
     data: { name: "Alice's Root Directory", authorId: alice.id },
   })
