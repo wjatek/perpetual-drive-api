@@ -105,4 +105,35 @@ router.get(
   }
 )
 
+router.post(
+  '/:id/comments',
+  param('id').isUUID().withMessage('Invalid ID'),
+  body('content').trim().escape().notEmpty().withMessage('Content is required'),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() })
+      return
+    }
+
+    try {
+      const { content } = req.body
+      const authorId = req.user.id
+      const postId = req.params.id
+
+      const newPost = await prisma.comment.create({
+        data: {
+          content,
+          authorId,
+          postId,
+        },
+      })
+
+      res.status(201).json(newPost)
+    } catch (err) {
+      next(err)
+    }
+  }
+)
+
 export default router
