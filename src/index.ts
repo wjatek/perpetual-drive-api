@@ -20,15 +20,17 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 app.use('/', authRoutes)
 
-// app.use('/users', authMiddleware, userRoutes)
-// app.use('/posts', authMiddleware, postRoutes)
-// app.use('/files', authMiddleware, fileRoutes)
-// app.use('/directories', authMiddleware, directoryRoutes)
+app.use((req, res, next) => {
+  const delay = Math.floor(Math.random() * (2000 - 300 + 1)) + 300
+  setTimeout(() => {
+    next()
+  }, delay)
+})
 
-app.use('/users', userRoutes)
-app.use('/posts', postRoutes)
-app.use('/files', fileRoutes)
-app.use('/directories', directoryRoutes)
+app.use('/users', authMiddleware, userRoutes)
+app.use('/posts', authMiddleware, postRoutes)
+app.use('/files', authMiddleware, fileRoutes)
+app.use('/directories', authMiddleware, directoryRoutes)
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`)

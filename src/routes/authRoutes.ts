@@ -57,7 +57,7 @@ router.post(
         { userId: user.id },
         process.env.JWT_SECRET || 'default_secret',
         {
-          expiresIn: '1h',
+          expiresIn: '10h', // TODO: add refresh token
         }
       )
 
