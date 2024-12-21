@@ -15,6 +15,9 @@ router.get(
             select: basicUser,
           },
         },
+        orderBy: {
+          createdAt: 'desc',
+        },
       })
       res.json(posts)
     } catch (err) {
