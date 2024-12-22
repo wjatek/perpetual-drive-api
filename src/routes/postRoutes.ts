@@ -177,6 +177,11 @@ router.post(
               disconnect: { id: userId },
             },
           },
+          include: {
+            likedBy: {
+              select: basicUser,
+            },
+          },
         })
       } else {
         updatedPost = await prisma.post.update({
@@ -184,6 +189,11 @@ router.post(
           data: {
             likedBy: {
               connect: { id: userId },
+            },
+          },
+          include: {
+            likedBy: {
+              select: basicUser,
             },
           },
         })
