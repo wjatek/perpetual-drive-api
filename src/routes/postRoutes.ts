@@ -99,9 +99,9 @@ router.get(
       }
 
       const { id } = req.params
-      const post = await prisma.comment.findMany({ where: { postId: id } })
+      const comments = await prisma.comment.findMany({ where: { postId: id } })
 
-      res.json(post)
+      res.json(comments)
     } catch (err) {
       next(err)
     }
@@ -124,7 +124,7 @@ router.post(
       const authorId = req.user.id
       const postId = req.params.id
 
-      const newPost = await prisma.comment.create({
+      const newComment = await prisma.comment.create({
         data: {
           content,
           authorId,
@@ -132,7 +132,64 @@ router.post(
         },
       })
 
-      res.status(201).json(newPost)
+      res.status(201).json(newComment)
+    } catch (err) {
+      next(err)
+    }
+  }
+)
+
+router.post(
+  '/:id/like',
+  param('id').isUUID().withMessage('Invalid ID'),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() })
+      return
+    }
+
+    try {
+      const userId = req.user.id
+      const postId = req.params.id
+
+      const post = await prisma.post.findUnique({
+        where: { id: postId },
+        include: {
+          likedBy: true,
+        },
+      })
+
+      if (!post) {
+        res.status(404).json({ message: 'Post not found' })
+        return
+      }
+
+      const hasLiked = post.likedBy.some((user) => user.id === userId)
+
+      let updatedPost
+
+      if (hasLiked) {
+        updatedPost = await prisma.post.update({
+          where: { id: postId },
+          data: {
+            likedBy: {
+              disconnect: { id: userId },
+            },
+          },
+        })
+      } else {
+        updatedPost = await prisma.post.update({
+          where: { id: postId },
+          data: {
+            likedBy: {
+              connect: { id: userId },
+            },
+          },
+        })
+      }
+
+      res.status(201).json(updatedPost)
     } catch (err) {
       next(err)
     }
