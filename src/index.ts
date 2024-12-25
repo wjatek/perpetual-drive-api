@@ -8,13 +8,21 @@ import fileRoutes from './routes/fileRoutes'
 import directoryRoutes from './routes/directoryRoutes'
 import authMiddleware from './middlewares/authMiddleware'
 import bodyParser from 'body-parser'
+import cookieParser from 'cookie-parser'
 
 dotenv.config()
 
 const PORT = process.env.PORT || '3000'
 
 const app = express()
-app.use(cors())
+
+const corsOptions = {
+  origin: 'http://localhost:3000', // TODO
+  credentials: true,
+}
+app.use(cors(corsOptions))
+
+app.use(cookieParser())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 

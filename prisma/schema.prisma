@@ -15,9 +15,10 @@ datasource db {
 }
 
 model User {
-  id       String @id @default(uuid())
-  name     String
-  password String
+  id           String         @id @default(uuid())
+  name         String
+  password     String
+  RefreshToken RefreshToken[]
 
   posts      Post[]
   comments   Comment[]
@@ -25,6 +26,15 @@ model User {
 
   directories Directory[]
   files       File[]
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  expiresAt DateTime
 }
 
 model Post {

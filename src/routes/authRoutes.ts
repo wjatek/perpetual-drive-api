@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs'
+import crypto from 'crypto'
 import express, { NextFunction, Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
 import prisma from '../prisma/client'
@@ -53,19 +54,80 @@ router.post(
         return
       }
 
-      const token = jwt.sign(
+      const accessToken = jwt.sign(
         { userId: user.id },
         process.env.JWT_SECRET || 'default_secret',
-        {
-          expiresIn: '10h', // TODO: add refresh token
-        }
+        { expiresIn: '1h' }
       )
 
-      res.json({ user: { id: user.id, name: user.name }, token })
+      const refreshToken = crypto.randomBytes(40).toString('hex')
+      const sevenDays = 7 * 24 * 60 * 60 * 1000
+      const expiresAt = new Date(Date.now() + sevenDays)
+
+      await prisma.refreshToken.create({
+        data: {
+          token: refreshToken,
+          userId: user.id,
+          expiresAt,
+        },
+      })
+
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+
+      res.json({ user: { id: user.id, name: user.name }, accessToken })
     } catch (err) {
       next(err)
     }
   }
 )
+
+router.post(
+  '/refresh-token',
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const refreshToken: string = req.cookies.refreshToken
+
+    if (!refreshToken) {
+      res.status(401).json({ error: 'Refresh token required' })
+      return
+    }
+
+    try {
+      const storedToken = await prisma.refreshToken.findFirst({
+        where: { token: refreshToken },
+      })
+
+      if (!storedToken || storedToken.expiresAt < new Date()) {
+        res.status(401).json({ error: 'Invalid or expired refresh token' })
+        return
+      }
+
+      const accessToken = jwt.sign(
+        { userId: storedToken.userId },
+        process.env.JWT_SECRET || 'default_secret',
+        { expiresIn: '10h' }
+      )
+
+      res.json({ accessToken })
+    } catch (err) {
+      next(err)
+    }
+  }
+)
+
+router.post('/logout', async (req: Request, res: Response): Promise<void> => {
+  const refreshToken = req.cookies.refreshToken
+
+  if (refreshToken) {
+    await prisma.refreshToken.deleteMany({ where: { token: refreshToken } })
+    res.clearCookie('refreshToken')
+  }
+
+  res.status(200).json({ message: 'Logged out successfully' })
+})
 
 export default router
