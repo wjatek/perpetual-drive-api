@@ -6,6 +6,11 @@ import prisma from '../prisma/client'
 
 const router = express.Router()
 
+const jwtSign = (userId: string) =>
+  jwt.sign({ userId }, process.env.JWT_SECRET || 'default_secret', {
+    expiresIn: '1h',
+  })
+
 router.post(
   '/register',
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -54,11 +59,7 @@ router.post(
         return
       }
 
-      const accessToken = jwt.sign(
-        { userId: user.id },
-        process.env.JWT_SECRET || 'default_secret',
-        { expiresIn: '1h' }
-      )
+      const accessToken = jwtSign(user.id)
 
       const refreshToken = crypto.randomBytes(40).toString('hex')
       const sevenDays = 7 * 24 * 60 * 60 * 1000
@@ -106,13 +107,20 @@ router.post(
         return
       }
 
-      const accessToken = jwt.sign(
-        { userId: storedToken.userId },
-        process.env.JWT_SECRET || 'default_secret',
-        { expiresIn: '10h' }
-      )
+      const userId = storedToken.userId
 
-      res.json({ accessToken })
+      const user = await prisma.user.findFirst({
+        where: { id: userId },
+      })
+
+      if (!user) {
+        res.status(404).json({ error: 'User not found' })
+        return
+      }
+
+      const accessToken = jwtSign(userId)
+
+      res.json({ user: { id: user.id, name: user.name }, accessToken })
     } catch (err) {
       next(err)
     }
