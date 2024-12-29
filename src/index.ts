@@ -17,7 +17,7 @@ const PORT = process.env.PORT || '3000'
 const app = express()
 
 const corsOptions = {
-  origin: 'http://localhost:3000', // TODO
+  origin: 'https://perpetual-drive-webapp.onrender.com/', // TODO
   credentials: true,
 }
 app.use(cors(corsOptions))
