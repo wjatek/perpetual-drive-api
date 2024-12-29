@@ -28,13 +28,6 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 app.use('/', authRoutes)
 
-app.use((req, res, next) => {
-  const delay = Math.floor(Math.random() * (2000 - 300 + 1)) + 300
-  setTimeout(() => {
-    next()
-  }, delay)
-})
-
 app.use('/users', authMiddleware, userRoutes)
 app.use('/posts', authMiddleware, postRoutes)
 app.use('/files', authMiddleware, fileRoutes)
