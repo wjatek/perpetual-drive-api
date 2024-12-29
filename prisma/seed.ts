@@ -73,6 +73,7 @@ const clearDirectory = async (dir: string): Promise<void> => {
 async function seed() {
   await prisma.file.deleteMany()
   await prisma.directory.deleteMany()
+  await prisma.refreshToken.deleteMany()
   await prisma.comment.deleteMany()
   await prisma.post.deleteMany()
   await prisma.user.deleteMany()
