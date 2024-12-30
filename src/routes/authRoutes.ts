@@ -76,7 +76,7 @@ router.post(
       res.cookie('refreshToken', refreshToken, {
         path: process.env.NODE_ENV === 'prod' ? '/refresh-token' : '/',
         httpOnly: true,
-        sameSite: 'none',
+        sameSite: process.env.NODE_ENV === 'prod' ? 'none' : 'strict',
         secure: process.env.NODE_ENV === 'prod',
         maxAge: thirtyDays,
       })
