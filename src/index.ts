@@ -13,7 +13,7 @@ import cookieParser from 'cookie-parser'
 dotenv.config()
 
 const PORT = process.env.PORT || '3000'
-const FRONTEND_DOMAIN = 'http://localhost:3000'
+const FRONTEND_DOMAIN = process.env.FRONTEND_DOMAIN || 'http://localhost:3000'
 
 const app = express()
 
