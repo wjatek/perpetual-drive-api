@@ -62,8 +62,8 @@ router.post(
       const accessToken = jwtSign(user.id)
 
       const refreshToken = crypto.randomBytes(40).toString('hex')
-      const sevenDays = 7 * 24 * 60 * 60 * 1000
-      const expiresAt = new Date(Date.now() + sevenDays)
+      const thirtyDays = 30 * 24 * 60 * 60 * 1000
+      const expiresAt = new Date(Date.now() + thirtyDays)
 
       await prisma.refreshToken.create({
         data: {
@@ -77,9 +77,9 @@ router.post(
         path: process.env.NODE_ENV === 'prod' ? '/refresh-token' : '/',
         httpOnly: true,
         sameSite: 'none',
-        domain: '.onrender.com',
-        secure: true,
-        maxAge: 1000 * 60 * 60 * 24 * 30,
+        domain: 'onrender.com',
+        secure: process.env.NODE_ENV === 'prod',
+        maxAge: thirtyDays,
       })
 
       res.json({ user: { id: user.id, name: user.name }, accessToken })
