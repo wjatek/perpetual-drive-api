@@ -76,7 +76,8 @@ router.post(
       res.cookie('refreshToken', refreshToken, {
         path: process.env.NODE_ENV === 'prod' ? '/refresh-token' : '/',
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: 'none',
+        domain: '.onrender.com',
         secure: true,
         maxAge: 1000 * 60 * 60 * 24 * 30,
       })
