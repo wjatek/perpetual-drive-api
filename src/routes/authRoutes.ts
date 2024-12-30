@@ -13,9 +13,7 @@ const jwtSign = (userId: string) =>
 
 const getFrontendDomain = (): string => {
   const url = process.env.FRONTEND_DOMAIN
-  console.log(url)
   const matches = url?.match(/^https?:\/\/([^\/:]+)(?::\d+)?/)
-  console.log(matches ? `.${matches[1]}` : 'localhost')
   return matches ? `${matches[1]}` : 'localhost'
 }
 
@@ -86,8 +84,9 @@ router.post(
         secure: process.env.NODE_ENV === 'prod',
         sameSite: 'lax',
         maxAge: sevenDays,
-        domain: getFrontendDomain(),
+        domain: '.onrender.com'
       })
+      console.log(getFrontendDomain())
 
       res.json({ user: { id: user.id, name: user.name }, accessToken })
     } catch (err) {
