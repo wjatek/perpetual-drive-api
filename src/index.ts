@@ -13,11 +13,12 @@ import cookieParser from 'cookie-parser'
 dotenv.config()
 
 const PORT = process.env.PORT || '3000'
+const CORS_ORIGIN = process.env.CORS_ORIGIN || ''
 
 const app = express()
 
 const corsOptions = {
-  origin: 'https://perpetual-drive-webapp.onrender.com', // TODO
+  origin: CORS_ORIGIN,
   credentials: true,
 }
 app.use(cors(corsOptions))
