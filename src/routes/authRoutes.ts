@@ -8,7 +8,7 @@ const router = express.Router()
 
 const jwtSign = (userId: string) =>
   jwt.sign({ userId }, process.env.JWT_SECRET || 'default_secret', {
-    expiresIn: '1h',
+    expiresIn: '20m',
   })
 
 router.post(
