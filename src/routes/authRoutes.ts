@@ -11,12 +11,6 @@ const jwtSign = (userId: string) =>
     expiresIn: '1h',
   })
 
-const getFrontendDomain = (): string => {
-  const url = process.env.FRONTEND_DOMAIN
-  const matches = url?.match(/^https?:\/\/([^\/:]+)(?::\d+)?/)
-  return matches ? `${matches[1]}` : 'localhost'
-}
-
 router.post(
   '/register',
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -80,13 +74,12 @@ router.post(
       })
 
       res.cookie('refreshToken', refreshToken, {
+        path: process.env.NODE_ENV === 'prod' ? '/refresh-token' : '/',
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'prod',
-        sameSite: 'lax',
-        maxAge: sevenDays,
-        domain: '.onrender.com'
+        sameSite: 'strict' as 'strict',
+        secure: true,
+        maxAge: 1000 * 60 * 60 * 24 * 30,
       })
-      console.log(getFrontendDomain())
 
       res.json({ user: { id: user.id, name: user.name }, accessToken })
     } catch (err) {
