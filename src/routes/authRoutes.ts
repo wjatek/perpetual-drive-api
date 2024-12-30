@@ -6,10 +6,14 @@ import prisma from '../prisma/client'
 
 const router = express.Router()
 
-const jwtSign = (userId: string) =>
-  jwt.sign({ userId }, process.env.JWT_SECRET || 'default_secret', {
-    expiresIn: '20m',
-  })
+const jwtSign = (userId: string, secret?: string, expiresIn?: string) =>
+  jwt.sign(
+    { userId },
+    secret || process.env.ACCESS_TOKEN_SECRET || 'default_secret',
+    {
+      expiresIn: expiresIn || '15m',
+    }
+  )
 
 router.post(
   '/register',
@@ -61,7 +65,11 @@ router.post(
 
       const accessToken = jwtSign(user.id)
 
-      const refreshToken = crypto.randomBytes(40).toString('hex')
+      const refreshToken = jwtSign(
+        user.id,
+        process.env.REFRESH_TOKEN_SECRET,
+        '30d'
+      )
       const thirtyDays = 30 * 24 * 60 * 60 * 1000
       const expiresAt = new Date(Date.now() + thirtyDays)
 
