@@ -12,7 +12,7 @@ const jwtSign = (userId: string) =>
   })
 
 const getFrontendDomain = (): string => {
-  const url = process.env.CORS_ORIGIN
+  const url = process.env.FRONTEND_DOMAIN
   console.log(url)
   const matches = url?.match(/^https?:\/\/([^\/:]+)(?::\d+)?/)
   console.log(matches ? `.${matches[1]}` : 'localhost')
@@ -83,8 +83,8 @@ router.post(
 
       res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        secure: process.env.NODE_ENV === 'prod',
+        sameSite: 'lax',
         maxAge: sevenDays,
         domain: getFrontendDomain(),
       })
