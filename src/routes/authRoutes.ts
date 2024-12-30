@@ -11,6 +11,14 @@ const jwtSign = (userId: string) =>
     expiresIn: '1h',
   })
 
+const getFrontendDomain = (): string => {
+  const url = process.env.CORS_ORIGIN
+  console.log(url)
+  const matches = url?.match(/^https?:\/\/([^\/:]+)(?::\d+)?/)
+  console.log(matches ? `.${matches[1]}` : 'localhost')
+  return matches ? `${matches[1]}` : 'localhost'
+}
+
 router.post(
   '/register',
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -78,6 +86,7 @@ router.post(
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
         maxAge: sevenDays,
+        domain: getFrontendDomain(),
       })
 
       res.json({ user: { id: user.id, name: user.name }, accessToken })
