@@ -77,7 +77,6 @@ router.post(
         path: process.env.NODE_ENV === 'prod' ? '/refresh-token' : '/',
         httpOnly: true,
         sameSite: 'none',
-        domain: 'onrender.com',
         secure: process.env.NODE_ENV === 'prod',
         maxAge: thirtyDays,
       })
