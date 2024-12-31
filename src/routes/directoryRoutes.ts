@@ -1,7 +1,7 @@
-import express, { NextFunction, Request, Response } from 'express'
-import { body, param, query, validationResult } from 'express-validator'
-import prisma from '../prisma/client'
 import { Directory } from '@prisma/client'
+import express, { NextFunction, Request, Response } from 'express'
+import { param, query, validationResult } from 'express-validator'
+import prisma from '../prisma/client'
 
 const router = express.Router()
 
@@ -68,30 +68,37 @@ router.post(
         return
       }
 
-      const parent = await prisma.directory.findUnique({
-        where: { id: parentId },
-        include: {
-          subdirectories: true,
-        },
-      })
+      let parent
+      if (parentId) {
+        parent = await prisma.directory.findUnique({
+          where: { id: parentId },
+          include: {
+            subdirectories: true,
+          },
+        })
 
-      if (!parent) {
-        res.status(400).json({ error: 'Parent directory does not exist' })
-        return
+        if (!parent) {
+          res.status(400).json({ error: 'Parent directory does not exist' })
+          return
+        }
       }
 
-      if (
-        parent.subdirectories.find((subdirectory) => subdirectory.name === name)
-      ) {
-        res.status(400).json({ error: 'Directory already exists' })
-        return
+      if (parent) {
+        if (
+          parent.subdirectories.find(
+            (subdirectory) => subdirectory.name === name
+          )
+        ) {
+          res.status(400).json({ error: 'Directory already exists' })
+          return
+        }
       }
 
       const newDirectory = await prisma.directory.create({
         data: {
           name,
           authorId,
-          parentId,
+          parentId: parentId || null,
         },
       })
 
