@@ -1,6 +1,7 @@
 import express, { NextFunction, Request, Response } from 'express'
 import { body, param, query, validationResult } from 'express-validator'
 import prisma from '../prisma/client'
+import { Directory } from '@prisma/client'
 
 const router = express.Router()
 
@@ -95,6 +96,45 @@ router.post(
       })
 
       res.status(201).json(newDirectory)
+    } catch (err) {
+      next(err)
+    }
+  }
+)
+
+router.get(
+  '/:id/path',
+  param('id').isUUID().withMessage('Invalid ID'),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() })
+      return
+    }
+
+    try {
+      const { id } = req.params
+      const path: Partial<Directory>[] = []
+
+      const getDirectoryPath = async (directoryId: string): Promise<void> => {
+        const directory = await prisma.directory.findUnique({
+          where: { id: directoryId },
+        })
+
+        if (!directory) {
+          throw new Error('Directory not found')
+        }
+
+        path.unshift({ id: directory.id, name: directory.name })
+
+        if (directory.parentId) {
+          await getDirectoryPath(directory.parentId)
+        }
+      }
+
+      await getDirectoryPath(id)
+
+      res.json({ path })
     } catch (err) {
       next(err)
     }
