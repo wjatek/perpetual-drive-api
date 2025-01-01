@@ -161,23 +161,25 @@ router.post(
       const { directoryId } = req.body
       const authorId = req.user.id
 
-      const directory = await prisma.directory.findUnique({
+      const directory = await prisma.directory.findFirst({
         where: { id: directoryId },
       })
 
-      if (!directory) {
+      if (directoryId && !directory) {
         res.status(400).json({ error: 'Directory does not exist' })
         await fs.promises.unlink(req.file.path)
         return
       }
 
       const filename = req.file.originalname
+      const fileSize = req.file.size
 
       const newFile = await prisma.file.create({
         data: {
           name: filename,
           authorId,
-          directoryId: directory.id,
+          directoryId: directory?.id || null,
+          size: fileSize,
         },
       })
 
