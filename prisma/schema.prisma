@@ -78,6 +78,7 @@ model Directory {
 model File {
   id   String @id @default(uuid())
   name String
+  size Int @default(0)
 
   authorId  String
   author    User     @relation(fields: [authorId], references: [id])

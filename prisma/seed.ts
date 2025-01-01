@@ -14,7 +14,7 @@ import { FILE_STORAGE_PATH } from '../src/services/fileService'
 const generateFile = async (
   dir: string,
   fileName: string,
-  sizeInMB: number
+  sizeInBytes: number
 ): Promise<void> => {
   const filePath = path.join(dir, fileName)
 
@@ -25,7 +25,6 @@ const generateFile = async (
   const writeStream = fs.createWriteStream(filePath)
 
   const oneMB = 1024 * 1024
-  const sizeInBytes = sizeInMB * oneMB
 
   const randomData = Buffer.alloc(oneMB)
 
@@ -44,7 +43,7 @@ const generateFile = async (
   return new Promise<void>((resolve, reject) => {
     writeStream.on('finish', () => {
       console.log(
-        `File '${fileName}' of size ${sizeInMB}MB has been created at ${dir}`
+        `File '${fileName}' of size ${sizeInBytes * 1024 * 1024}MB has been created at ${dir}`
       )
       resolve()
     })
@@ -172,40 +171,48 @@ async function seed() {
 
   clearDirectory(FILE_STORAGE_PATH)
 
+  const file1Size = 12 * 1024 * 1024
   const file1 = await prisma.file.create({
     data: {
       name: 'alice music.mp3',
       authorId: alice.id,
       directoryId: aliceRootDir.id,
+      size: file1Size,
     },
   })
-  await generateFile(FILE_STORAGE_PATH, file1.id, 12)
+  await generateFile(FILE_STORAGE_PATH, file1.id, file1Size)
 
+  const file2Size = 15 * 1024 * 1024
   const file2 = await prisma.file.create({
     data: {
       name: 'alice resume.pdf',
       authorId: alice.id,
       directoryId: aliceSubDir.id,
+      size: file2Size,
     },
   })
-  await generateFile(FILE_STORAGE_PATH, file2.id, 15)
+  await generateFile(FILE_STORAGE_PATH, file2.id, file2Size)
 
+  const file3Size = 10 * 1024 * 1024
   const file3 = await prisma.file.create({
     data: {
       name: "Bob's File 1",
       authorId: bob.id,
       directoryId: bobRootDir.id,
+      size: file3Size,
     },
   })
-  await generateFile(FILE_STORAGE_PATH, file3.id, 10)
+  await generateFile(FILE_STORAGE_PATH, file3.id, file3Size)
 
+  const file4Size = 102 * 1024 * 1024
   const file4 = await prisma.file.create({
     data: {
       name: 'file in root directory.txt',
       authorId: bob.id,
+      size: file4Size,
     },
   })
-  await generateFile(FILE_STORAGE_PATH, file4.id, 102)
+  await generateFile(FILE_STORAGE_PATH, file4.id, file4Size)
 }
 
 seed()
