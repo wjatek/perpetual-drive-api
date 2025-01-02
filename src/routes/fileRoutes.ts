@@ -161,44 +161,43 @@ router.post(
       const { directoryId } = req.body
       const authorId = req.user.id
 
-      const directory = await prisma.directory.findFirst({
-        where: { id: directoryId },
-      })
-
-      if (directoryId && !directory) {
-        res.status(400).json({ error: 'Directory does not exist' })
-        await fs.promises.unlink(req.file.path)
-        return
-      }
-
-      const filename = req.file.originalname
-      const fileSize = req.file.size
-
-      const newFile = await prisma.file.create({
-        data: {
-          name: filename,
-          authorId,
-          directoryId: directory?.id || null,
-          size: fileSize,
-        },
-      })
-
-      const filePath = path.join(FILE_STORAGE_PATH, newFile.id)
-      const writeStream = fs.createWriteStream(filePath)
-      const readStream = fs.createReadStream(req.file.path)
+      const { originalname, size: fileSize, path: filePath } = req.file
 
       try {
-        await pipeStream(readStream, writeStream)
+        const newFile = await prisma.$transaction(async (transaction) => {
+          const directory = await prisma.directory.findFirst({
+            where: { id: directoryId },
+          })
 
-        await fs.promises.unlink(req.file.path)
+          if (directoryId && !directory) {
+            await fs.promises
+              .unlink(filePath)
+              .catch((error) => console.error('Failed to unlink', error))
+            throw new Error('Directory does not exist')
+          }
 
-        res.status(201).json(newFile)
-      } catch (err) {
-        await prisma.file.delete({
-          where: { id: newFile.id },
+          const createdFile = await transaction.file.create({
+            data: {
+              name: originalname,
+              authorId,
+              directoryId: directory?.id || null,
+              size: fileSize,
+            },
+          })
+
+          const storagePath = path.join(FILE_STORAGE_PATH, createdFile.id)
+          const writeStream = fs.createWriteStream(storagePath)
+          const readStream = fs.createReadStream(filePath)
+          await pipeStream(readStream, writeStream)
+          await fs.promises.unlink(filePath)
+          return createdFile
         })
+        res.status(201).json(newFile)
+      } catch (err: any) {
         await fs.promises.unlink(filePath)
-
+        if (err.message === 'Directory does not exist') {
+          return res.status(400).json({ error: err.message })
+        }
         res
           .status(500)
           .json({ error: 'Error saving file', details: JSON.stringify(err) })
