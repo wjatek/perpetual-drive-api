@@ -68,13 +68,9 @@ router.post(
         return
       }
 
-      let parent
       if (parentId) {
-        parent = await prisma.directory.findUnique({
+        const parent = await prisma.directory.findFirst({
           where: { id: parentId },
-          include: {
-            subdirectories: true,
-          },
         })
 
         if (!parent) {
@@ -83,15 +79,13 @@ router.post(
         }
       }
 
-      if (parent) {
-        if (
-          parent.subdirectories.find(
-            (subdirectory) => subdirectory.name === name
-          )
-        ) {
-          res.status(400).json({ error: 'Directory already exists' })
-          return
-        }
+      const siblings = await prisma.directory.findMany({
+        where: { parentId: parentId || null },
+      })
+
+      if (siblings.find((dir) => dir.name === name)) {
+        res.status(400).json({ error: 'Directory already exists' })
+        return
       }
 
       const newDirectory = await prisma.directory.create({
