@@ -62,12 +62,12 @@ router.post(
   '/',
   body('content').trim().escape().notEmpty().withMessage('Content is required'),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      throw ApiError.validation(errors.array())
-    }
-
     try {
+      const errors = validationResult(req)
+      if (!errors.isEmpty()) {
+        throw ApiError.validation(errors.array())
+      }
+
       const { content } = req.body
       const authorId = req.user.id
 
@@ -110,12 +110,12 @@ router.post(
   param('id').isUUID().withMessage('Invalid ID'),
   body('content').trim().escape().notEmpty().withMessage('Content is required'),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      throw ApiError.validation(errors.array())
-    }
-
     try {
+      const errors = validationResult(req)
+      if (!errors.isEmpty()) {
+        throw ApiError.validation(errors.array())
+      }
+
       const { content } = req.body
       const authorId = req.user.id
       const postId = req.params.id
@@ -139,12 +139,12 @@ router.post(
   '/:id/like',
   param('id').isUUID().withMessage('Invalid ID'),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      throw ApiError.validation(errors.array())
-    }
-
     try {
+      const errors = validationResult(req)
+      if (!errors.isEmpty()) {
+        throw ApiError.validation(errors.array())
+      }
+
       const userId = req.user.id
       const postId = req.params.id
 

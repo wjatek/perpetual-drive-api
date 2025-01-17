@@ -18,10 +18,9 @@ const jwtSign = (userId: string, secret?: string, expiresIn?: string) =>
 router.post(
   '/register',
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const { name, password } = req.body
     try {
+      const { name, password } = req.body
       const hashedPassword = await bcrypt.hash(password, 10)
-
       const newUser = await prisma.user.create({
         data: {
           name,
@@ -41,13 +40,13 @@ router.post(
 router.post(
   '/login',
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const { name, password } = req.body
-
-    if (!name || !password) {
-      throw new ApiError('Missing credentials', 401)
-    }
-
     try {
+      const { name, password } = req.body
+
+      if (!name || !password) {
+        throw new ApiError('Missing credentials', 401)
+      }
+
       const user = await prisma.user.findFirst({ where: { name } })
 
       if (!user) {
@@ -96,13 +95,13 @@ router.post(
 router.post(
   '/refresh-token',
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const refreshToken: string = req.cookies.refreshToken
-
-    if (!refreshToken) {
-      throw new ApiError('Refresh token required', 401)
-    }
-
     try {
+      const refreshToken: string = req.cookies.refreshToken
+
+      if (!refreshToken) {
+        throw new ApiError('Refresh token required', 401)
+      }
+
       const storedToken = await prisma.refreshToken.findFirst({
         where: { token: refreshToken },
       })

@@ -10,12 +10,12 @@ router.get(
   '/',
   [query('parentId').optional().isString().trim().escape()],
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      throw ApiError.validation(errors.array())
-    }
-
     try {
+      const errors = validationResult(req)
+      if (!errors.isEmpty()) {
+        throw ApiError.validation(errors.array())
+      }
+
       const parentId = req.query.parentId as string
 
       const directories = await prisma.directory.findMany({
@@ -34,12 +34,12 @@ router.get(
   '/:id',
   param('id').isUUID().withMessage('Invalid ID'),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      throw ApiError.validation(errors.array())
-    }
-
     try {
+      const errors = validationResult(req)
+      if (!errors.isEmpty()) {
+        throw ApiError.validation(errors.array())
+      }
+
       const { id } = req.params
       const directory = await prisma.directory.findUnique({ where: { id: id } })
 
@@ -103,12 +103,12 @@ router.get(
   '/:id/path',
   param('id').isUUID().withMessage('Invalid ID'),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      throw ApiError.validation(errors.array())
-    }
-
     try {
+      const errors = validationResult(req)
+      if (!errors.isEmpty()) {
+        throw ApiError.validation(errors.array())
+      }
+
       const { id } = req.params
       const path: Partial<Directory>[] = []
 

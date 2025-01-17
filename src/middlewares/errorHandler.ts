@@ -5,7 +5,7 @@ const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
   if (err instanceof ApiError) {
     const { message, status, details } = err
 
-    const response: Record<string, any> = { error: message }
+    const response: Record<string, any> = { message }
     if (details) {
       response.details = details
     }
@@ -15,7 +15,7 @@ const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
   }
 
   console.error(err)
-  res.status(500).json({ error: 'Internal Server Error' })
+  res.status(500).json({ message: 'Internal Server Error' })
 }
 
 export default errorHandler

@@ -25,6 +25,10 @@ const authMiddleware = async (
       where: { id: decoded.userId },
     })) as User
 
+    if (!user) {
+      return next(new ApiError('User not found', 401))
+    }
+
     req.user = user
 
     next()
