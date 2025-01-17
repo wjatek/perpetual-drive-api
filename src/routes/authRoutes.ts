@@ -1,8 +1,8 @@
 import bcrypt from 'bcryptjs'
-import crypto from 'crypto'
 import express, { NextFunction, Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
 import prisma from '../prisma/client'
+import { ApiError } from '../utils/ApiError'
 
 const router = express.Router()
 
@@ -44,23 +44,20 @@ router.post(
     const { name, password } = req.body
 
     if (!name || !password) {
-      res.status(401).json({ error: 'Missing credentials' })
-      return
+      throw new ApiError('Missing credentials', 401)
     }
 
     try {
       const user = await prisma.user.findFirst({ where: { name } })
 
       if (!user) {
-        res.status(404).json({ error: 'User not found' })
-        return
+        throw ApiError.notFound('User not found')
       }
 
       const isPasswordValid = await bcrypt.compare(password, user.password)
 
       if (!isPasswordValid) {
-        res.status(401).json({ error: 'Invalid credentials' })
-        return
+        throw new ApiError('Invalid credentials', 401)
       }
 
       const accessToken = jwtSign(user.id)
@@ -102,8 +99,7 @@ router.post(
     const refreshToken: string = req.cookies.refreshToken
 
     if (!refreshToken) {
-      res.status(401).json({ error: 'Refresh token required' })
-      return
+      throw new ApiError('Refresh token required', 401)
     }
 
     try {
@@ -112,8 +108,7 @@ router.post(
       })
 
       if (!storedToken || storedToken.expiresAt < new Date()) {
-        res.status(401).json({ error: 'Invalid or expired refresh token' })
-        return
+        throw new ApiError('Invalid or expired refresh token', 401)
       }
 
       const userId = storedToken.userId
@@ -123,8 +118,7 @@ router.post(
       })
 
       if (!user) {
-        res.status(404).json({ error: 'User not found' })
-        return
+        throw ApiError.notFound('User not found')
       }
 
       const accessToken = jwtSign(userId)

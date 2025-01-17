@@ -1,6 +1,7 @@
 import express, { NextFunction, Request, Response } from 'express'
 import { body, param, validationResult } from 'express-validator'
 import prisma from '../prisma/client'
+import { ApiError } from '../utils/ApiError'
 import { basicUser } from '../utils/selectors'
 
 const router = express.Router()
@@ -33,8 +34,7 @@ router.get(
     try {
       const errors = validationResult(req)
       if (!errors.isEmpty()) {
-        res.status(400).json({ errors: errors.array() })
-        return
+        throw ApiError.validation(errors.array())
       }
 
       const { id } = req.params
@@ -48,8 +48,7 @@ router.get(
       })
 
       if (!post) {
-        res.status(404).json({ error: 'Post not found' })
-        return
+        throw ApiError.notFound('Post not found')
       }
 
       res.json(post)
@@ -65,8 +64,7 @@ router.post(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() })
-      return
+      throw ApiError.validation(errors.array())
     }
 
     try {
@@ -94,8 +92,7 @@ router.get(
     try {
       const errors = validationResult(req)
       if (!errors.isEmpty()) {
-        res.status(400).json({ errors: errors.array() })
-        return
+        throw ApiError.validation(errors.array())
       }
 
       const { id } = req.params
@@ -115,8 +112,7 @@ router.post(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() })
-      return
+      throw ApiError.validation(errors.array())
     }
 
     try {
@@ -145,8 +141,7 @@ router.post(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() })
-      return
+      throw ApiError.validation(errors.array())
     }
 
     try {
@@ -161,8 +156,7 @@ router.post(
       })
 
       if (!post) {
-        res.status(404).json({ message: 'Post not found' })
-        return
+        throw ApiError.notFound('Post not found')
       }
 
       const hasLiked = post.likedBy.some((user) => user.id === userId)

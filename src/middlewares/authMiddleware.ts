@@ -1,7 +1,8 @@
+import { User } from '@prisma/client'
 import { NextFunction, Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
 import prisma from '../prisma/client'
-import { User } from '@prisma/client'
+import { ApiError } from '../utils/ApiError'
 
 const authMiddleware = async (
   req: Request,
@@ -11,8 +12,7 @@ const authMiddleware = async (
   const token = req.header('Authorization')?.replace('Bearer ', '')
 
   if (!token) {
-    res.status(401).json({ error: 'Authentication required' })
-    return
+    throw new ApiError('Authentication required', 401)
   }
 
   try {
@@ -29,7 +29,7 @@ const authMiddleware = async (
 
     next()
   } catch (err) {
-    res.status(401).json({ error: 'Invalid or expired token' })
+    throw new ApiError('Invalid or expired token', 401)
   }
 }
 

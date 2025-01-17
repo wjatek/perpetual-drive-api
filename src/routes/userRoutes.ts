@@ -1,5 +1,6 @@
 import express, { NextFunction, Request, Response } from 'express'
 import prisma from '../prisma/client'
+import { ApiError } from '../utils/ApiError'
 
 const router = express.Router()
 
@@ -32,8 +33,7 @@ router.get(
       })
 
       if (!user) {
-        res.status(404).json({ error: 'User not found' })
-        return
+        throw ApiError.notFound('User not found')
       }
 
       res.json(user)

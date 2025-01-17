@@ -5,6 +5,7 @@ import multer from 'multer'
 import path from 'path'
 import prisma from '../prisma/client'
 import { FILE_STORAGE_PATH, pipeStream, upload } from '../services/fileService'
+import { ApiError } from '../utils/ApiError'
 
 const router = express.Router()
 
@@ -14,8 +15,7 @@ router.get(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() })
-      return
+      throw ApiError.validation(errors.array())
     }
 
     try {
@@ -39,8 +39,7 @@ router.get(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() })
-      return
+      throw ApiError.validation(errors.array())
     }
 
     try {
@@ -48,8 +47,7 @@ router.get(
       const file = await prisma.file.findUnique({ where: { id: id } })
 
       if (!file) {
-        res.status(404).json({ error: 'File not found' })
-        return
+        throw ApiError.notFound('File not found')
       }
 
       res.json(file)
@@ -65,8 +63,7 @@ router.delete(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() })
-      return
+      throw ApiError.validation(errors.array())
     }
 
     try {
@@ -74,8 +71,7 @@ router.delete(
       const file = await prisma.file.findUnique({ where: { id } })
 
       if (!file) {
-        res.status(404).json({ error: 'File not found' })
-        return
+        throw ApiError.notFound('File not found')
       }
 
       const filePath = path.join(FILE_STORAGE_PATH, id)
@@ -102,8 +98,7 @@ router.get(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() })
-      return
+      throw ApiError.validation(errors.array())
     }
 
     try {
@@ -130,7 +125,7 @@ router.get(
             .json({ error: 'Error streaming the file', details: err.message })
         })
       } else {
-        res.status(404).json({ error: 'File not found' })
+        throw ApiError.notFound('File not found')
       }
     } catch (err) {
       next(err)
@@ -155,7 +150,7 @@ router.post(
       }
 
       if (!req.file) {
-        return res.status(400).json({ error: 'No file uploaded' })
+        throw ApiError.badRequest('No file uploaded')
       }
 
       const { directoryId } = req.body
@@ -196,7 +191,7 @@ router.post(
       } catch (err: any) {
         await fs.promises.unlink(filePath)
         if (err.message === 'Directory does not exist') {
-          return res.status(400).json({ error: err.message })
+          throw ApiError.badRequest(err.message)
         }
         res
           .status(500)

@@ -2,6 +2,7 @@ import { Directory } from '@prisma/client'
 import express, { NextFunction, Request, Response } from 'express'
 import { param, query, validationResult } from 'express-validator'
 import prisma from '../prisma/client'
+import { ApiError } from '../utils/ApiError'
 
 const router = express.Router()
 
@@ -11,8 +12,7 @@ router.get(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() })
-      return
+      throw ApiError.validation(errors.array())
     }
 
     try {
@@ -36,8 +36,7 @@ router.get(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() })
-      return
+      throw ApiError.validation(errors.array())
     }
 
     try {
@@ -60,12 +59,11 @@ router.post(
   '/',
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { name, parentId } = req.body
+      const { name, parentId } = req.body // TODO validation
       const authorId = req.user.id
 
       if (!name) {
-        res.status(400).json({ error: 'Name is required' })
-        return
+        throw ApiError.badRequest('Name is required')
       }
 
       if (parentId) {
@@ -74,8 +72,7 @@ router.post(
         })
 
         if (!parent) {
-          res.status(400).json({ error: 'Parent directory does not exist' })
-          return
+          throw ApiError.badRequest('Parent directory does not exist')
         }
       }
 
@@ -84,8 +81,7 @@ router.post(
       })
 
       if (siblings.find((dir) => dir.name === name)) {
-        res.status(400).json({ error: 'Directory already exists' })
-        return
+        throw ApiError.badRequest('Directory already exists')
       }
 
       const newDirectory = await prisma.directory.create({
@@ -109,8 +105,7 @@ router.get(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() })
-      return
+      throw ApiError.validation(errors.array())
     }
 
     try {
