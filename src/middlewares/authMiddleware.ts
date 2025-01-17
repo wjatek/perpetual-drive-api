@@ -12,7 +12,7 @@ const authMiddleware = async (
   const token = req.header('Authorization')?.replace('Bearer ', '')
 
   if (!token) {
-    throw new ApiError('Authentication required', 401)
+    return next(new ApiError('Authentication required', 401))
   }
 
   try {
@@ -29,7 +29,7 @@ const authMiddleware = async (
 
     next()
   } catch (err) {
-    throw new ApiError('Invalid or expired token', 401)
+    return next(new ApiError('Invalid or expired token', 401))
   }
 }
 
