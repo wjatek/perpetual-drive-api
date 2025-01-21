@@ -1,15 +1,27 @@
-/**
- * Initial data for development and testing
- *
- * use:
- * npx ts-node prisma/seed.ts
- */
-
 import bcrypt from 'bcryptjs'
+import { execSync } from 'child_process'
 import fs from 'fs'
 import path from 'path'
 import prisma from '../src/prisma/client'
 import { FILE_STORAGE_PATH } from '../src/services/fileService'
+
+const clearDirectory = async (dir: string): Promise<void> => {
+  if (fs.existsSync(dir)) {
+    const files = await fs.promises.readdir(dir)
+    for (const file of files) {
+      const filePath = path.join(dir, file)
+      const stats = await fs.promises.stat(filePath)
+      if (stats.isFile()) {
+        await fs.promises.unlink(filePath)
+      }
+    }
+    console.log(`All files removed from ${dir}`)
+  }
+}
+
+const resetDatabase = async () => {
+  execSync('npx prisma db push --force-reset', { stdio: 'inherit' })
+}
 
 const generateFile = async (
   dir: string,
@@ -25,7 +37,6 @@ const generateFile = async (
   const writeStream = fs.createWriteStream(filePath)
 
   const oneMB = 1024 * 1024
-
   const randomData = Buffer.alloc(oneMB)
 
   let written = 0
@@ -43,7 +54,9 @@ const generateFile = async (
   return new Promise<void>((resolve, reject) => {
     writeStream.on('finish', () => {
       console.log(
-        `File '${fileName}' of size ${sizeInBytes * 1024 * 1024}MB has been created at ${dir}`
+        `File '${fileName}' of size ${
+          sizeInBytes * 1024 * 1024
+        }MB has been created at ${dir}`
       )
       resolve()
     })
@@ -55,30 +68,8 @@ const generateFile = async (
   })
 }
 
-const clearDirectory = async (dir: string): Promise<void> => {
-  if (fs.existsSync(dir)) {
-    const files = await fs.promises.readdir(dir)
-    for (const file of files) {
-      const filePath = path.join(dir, file)
-      const stats = await fs.promises.stat(filePath)
-      if (stats.isFile()) {
-        await fs.promises.unlink(filePath)
-      }
-    }
-    console.log(`All files removed from ${dir}`)
-  }
-}
-
-async function seed() {
-  await prisma.file.deleteMany()
-  await prisma.directory.deleteMany()
-  await prisma.refreshToken.deleteMany()
-  await prisma.comment.deleteMany()
-  await prisma.post.deleteMany()
-  await prisma.user.deleteMany()
-
-  console.log('Database cleared')
-
+const seedData = async () => {
+  console.log('Seeding data...')
   const alice = await prisma.user.create({
     data: { name: 'Alice', password: await bcrypt.hash('123456', 10) },
   })
@@ -169,7 +160,7 @@ async function seed() {
     data: { name: "Bob's Root Directory", authorId: bob.id },
   })
 
-  clearDirectory(FILE_STORAGE_PATH)
+  await clearDirectory(FILE_STORAGE_PATH)
 
   const file1Size = 12 * 1024 * 1024
   const file1 = await prisma.file.create({
@@ -215,12 +206,16 @@ async function seed() {
   await generateFile(FILE_STORAGE_PATH, file4.id, file4Size)
 }
 
-seed()
-  .then(() => {
+async function seed() {
+  try {
+    await resetDatabase()
+    await seedData()
     console.log('Seeding completed')
     process.exit(0)
-  })
-  .catch((error) => {
-    console.error('Error seeding database:', error)
+  } catch (error) {
+    console.error('Error during seeding:', error)
     process.exit(1)
-  })
+  }
+}
+
+seed()
