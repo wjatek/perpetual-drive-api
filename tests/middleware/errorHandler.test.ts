@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express'
-import errorHandler from '../../src/middlewares/errorHandler'
+import errorHandler from '../../src/middleware/errorHandler'
 import { ApiError } from '../../src/utils/ApiError'
 
 describe('errorHandler', () => {
