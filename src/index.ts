@@ -37,6 +37,8 @@ app.use('/directories', authMiddleware, directoryRoutes)
 
 app.use(errorHandler)
 
-app.listen(PORT, () => {
+export const server = app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`)
 })
+
+export default app
