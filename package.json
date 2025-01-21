@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npx tsc && node dist/index.js",
     "dev": "tsc-watch --noClear -p ./tsconfig.json --onSuccess \"node ./dist/index.js\"",
-    "test": "jest"
+    "test": "if [ \"$NODE_ENV\" != \"prod\" ]; then jest; else echo 'Skipping tests in production environment'; fi"
   },
   "author": "",
   "license": "ISC",
