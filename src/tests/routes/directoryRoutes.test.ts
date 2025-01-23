@@ -29,26 +29,26 @@ describe('Directory Routes', () => {
       expect(response.status).toBe(200)
       expect(response.body).toMatchJSON([
         {
-          "id": "{{uuid}}",
-          "name": "Alice's Root Directory",
-          "authorId": "{{uuid}}",
-          "createdAt": "{{date}}",
-          "parentId": null
+          id: '{{uuid}}',
+          name: "Alice's Root Directory",
+          authorId: '{{uuid}}',
+          createdAt: '{{date}}',
+          parentId: null,
         },
         {
-          "id": "{{uuid}}",
-          "name": "Alice's Subdirectory",
-          "authorId": "{{uuid}}",
-          "createdAt": "{{date}}",
-          "parentId": "{{uuid}}",
+          id: '{{uuid}}',
+          name: "Alice's Subdirectory",
+          authorId: '{{uuid}}',
+          createdAt: '{{date}}',
+          parentId: '{{uuid}}',
         },
         {
-          "id": "{{uuid}}",
-          "name": "Bob's Root Directory",
-          "authorId": "{{uuid}}",
-          "createdAt": "{{date}}",
-          "parentId": null
-        }
+          id: '{{uuid}}',
+          name: "Bob's Root Directory",
+          authorId: '{{uuid}}',
+          createdAt: '{{date}}',
+          parentId: null,
+        },
       ])
     })
 
@@ -83,11 +83,11 @@ describe('Directory Routes', () => {
 
       expect(response.status).toBe(200)
       expect(response.body).toMatchJSON({
-        "id": id,
-        "name": "Alice's Root Directory",
-        "authorId": "{{uuid}}",
-        "createdAt": "{{date}}",
-        "parentId": null
+        id: id,
+        name: "Alice's Root Directory",
+        authorId: '{{uuid}}',
+        createdAt: '{{date}}',
+        parentId: null,
       })
     })
 

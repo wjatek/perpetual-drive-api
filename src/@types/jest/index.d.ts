@@ -1,7 +1,7 @@
-import { CustomMatcher } from 'jest' 
+import { CustomMatcher } from 'jest'
 
 interface CustomMatchers<R = unknown> {
-  toMatchJSON(expected?: string | object): R;
+  toMatchJSON(expected?: string | object): R
 }
 
 declare global {

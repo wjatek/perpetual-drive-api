@@ -1,6 +1,6 @@
-import prisma from '../../prisma/client'
 import request from 'supertest'
 import app, { server } from '../../index'
+import prisma from '../../prisma/client'
 
 afterAll(() => {
   server.close()

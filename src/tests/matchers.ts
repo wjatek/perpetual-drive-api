@@ -18,7 +18,12 @@ expect.extend({
           if (expectedData[key] === '{{uuid}}') {
             if (!isUUID(actualData[key])) return false
           } else if (expectedData[key] === '{{date}}') {
-            if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(actualData[key])) return false
+            if (
+              !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(
+                actualData[key]
+              )
+            )
+              return false
           } else if (!compareObjects(actualData[key], expectedData[key])) {
             return false
           }
