@@ -44,8 +44,7 @@ router.get(
       const directory = await prisma.directory.findUnique({ where: { id: id } })
 
       if (!directory) {
-        res.status(404).json({ error: 'Directory not found' })
-        return
+        throw ApiError.notFound('Directory not found')
       }
 
       res.json(directory)

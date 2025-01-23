@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
-import errorHandler from '../../src/middleware/errorHandler'
-import { ApiError } from '../../src/utils/ApiError'
+import errorHandler from '../../middleware/errorHandler'
+import { ApiError } from '../../utils/ApiError'
 
 describe('errorHandler', () => {
   let mockReq: Partial<Request>

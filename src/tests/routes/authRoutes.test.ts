@@ -1,64 +1,33 @@
-import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
+import prisma from '../../prisma/client'
 import request from 'supertest'
-import app, { server } from '../../src/index'
-
-afterEach(() => {
-  jest.clearAllMocks()
-})
+import app, { server } from '../../index'
 
 afterAll(() => {
   server.close()
 })
-
-jest.mock('../../src/prisma/client', () => ({
-  user: {
-    create: jest.fn().mockResolvedValue({ id: 'mockUserId', name: 'testUser' }),
-    findFirst: jest.fn().mockResolvedValue({
-      id: 'mockUserId',
-      name: 'testUser',
-      password: 'mockHashedPassword',
-    }),
-  },
-  refreshToken: {
-    create: jest
-      .fn()
-      .mockResolvedValue({ token: 'mockRefreshToken', userId: 'mockUserId' }),
-    findFirst: jest.fn().mockResolvedValue({
-      token: 'mockRefreshToken',
-      userId: 'mockUserId',
-      expiresAt: new Date(Date.now() + 1000000),
-    }),
-    deleteMany: jest.fn(),
-  },
-}))
 
 describe('POST /register', () => {
   it('should create a user and return a success message', async () => {
     const response = await request(app)
       .post('/register')
       .send({ name: 'testUser', password: 'testPassword' })
+    await prisma.user.deleteMany({ where: { name: 'testUser' } })
 
     expect(response.status).toBe(201)
     expect(response.body.message).toBe('User created successfully')
-    expect(response.body.userId).toEqual('mockUserId')
+    expect(response.body.userId).toBeDefined()
   })
 })
 
 describe('POST /login', () => {
   it('should log in the user and return an access token', async () => {
-    jest.spyOn(jwt, 'sign').mockImplementationOnce(() => 'mockAccessToken')
-    jest
-      .spyOn(bcrypt, 'compare')
-      .mockImplementationOnce(() => 'mockAccessToken')
-
     const response = await request(app)
       .post('/login')
-      .send({ name: 'testUser', password: 'testPassword' })
+      .send({ name: 'Alice', password: '123456' })
 
     expect(response.status).toBe(200)
-    expect(response.body.accessToken).toBe('mockAccessToken')
-    expect(response.body.user.name).toBe('testUser')
+    expect(response.body.accessToken).toBeDefined()
+    expect(response.body.user.name).toBe('Alice')
   })
 
   it('should return an error if credentials are missing', async () => {
@@ -73,7 +42,7 @@ describe('POST /login', () => {
   it('should return an error if invalid credentials are provided', async () => {
     const response = await request(app)
       .post('/login')
-      .send({ name: 'testUser', password: 'wrongPassword' })
+      .send({ name: 'Alice', password: '654321' })
 
     expect(response.status).toBe(401)
     expect(response.body.message).toBe('Invalid credentials')
@@ -82,12 +51,21 @@ describe('POST /login', () => {
 
 describe('POST /refresh-token', () => {
   it('should return a new access token if the refresh token is valid', async () => {
+    const loginResponse = await request(app)
+      .post('/login')
+      .send({ name: 'Alice', password: '123456' })
+
+    expect(loginResponse.status).toBe(200)
+    expect(loginResponse.body.accessToken).toBeDefined()
+
+    const cookies = loginResponse.headers['set-cookie']
+    expect(cookies).toBeDefined()
+
     const response = await request(app)
       .post('/refresh-token')
-      .set('Cookie', 'refreshToken=mockRefreshToken')
+      .set('Cookie', cookies)
 
     expect(response.status).toBe(200)
-    expect(response.body.user).toEqual({ id: 'mockUserId', name: 'testUser' })
     expect(response.body.accessToken).toBeDefined()
   })
 
@@ -96,6 +74,13 @@ describe('POST /refresh-token', () => {
 
     expect(response.status).toBe(401)
     expect(response.body.message).toBe('Refresh token required')
+
+    const response2 = await request(app)
+      .post('/refresh-token')
+      .set('Cookie', 'refreshToken=invalidToken')
+
+    expect(response2.status).toBe(401)
+    expect(response2.body.message).toBe('Invalid or expired refresh token')
   })
 })
 

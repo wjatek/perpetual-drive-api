@@ -1,11 +1,11 @@
 import { User } from '@prisma/client'
 import { Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
-import authMiddleware from '../../src/middleware/authMiddleware'
-import prisma from '../../src/prisma/client'
-import { ApiError } from '../../src/utils/ApiError'
+import authMiddleware from '../../middleware/authMiddleware'
+import prisma from '../../prisma/client'
+import { ApiError } from '../../utils/ApiError'
 
-jest.mock('../../src/prisma/client', () => ({
+jest.mock('../../prisma/client', () => ({
   user: {
     findUnique: jest.fn(),
   },
