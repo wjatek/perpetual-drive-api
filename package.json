@@ -6,7 +6,9 @@
   "scripts": {
     "start": "npx tsc && node dist/index.js",
     "dev": "tsc-watch --noClear -p ./tsconfig.json --onSuccess \"node ./dist/index.js\"",
-    "test": "if [ \"$NODE_ENV\" != \"prod\" ]; then jest; else echo 'Skipping tests in production environment'; fi"
+    "test": "if [ \"$NODE_ENV\" != \"prod\" ]; then jest; else echo 'Skipping tests in production environment'; fi",
+    "seed": "if [ \"$NODE_ENV\" != \"prod\" ]; then npx ts-node prisma/seed.ts; else echo 'Skipping db seed script in production environment'; fi",
+    "test2": "jest"
   },
   "author": "",
   "license": "ISC",
